@@ -21,9 +21,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, DATA
   8 .data         0000001c  20000000  08006158  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          0000040c  2000001c  08006174  0002001c  2**2
+  9 .bss          00000418  2000001c  08006174  0002001c  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  20000428  08006174  00020428  2**0
+ 10 ._user_heap_stack 00000604  20000434  08006174  00020434  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  0002001c  2**0
                   CONTENTS, READONLY
@@ -421,8 +421,8 @@ int main(void)
  800052c:	f000 fb22 	bl	8000b74 <Kff_Seperate>
 	  EEPROMWrite();
  8000530:	f000 fb40 	bl	8000bb4 <EEPROMWrite>
-	  EEPROMRead(eepromReadBack,4);
- 8000534:	2104      	movs	r1, #4
+	  EEPROMRead(eepromReadBack,16);
+ 8000534:	2110      	movs	r1, #16
  8000536:	4806      	ldr	r0, [pc, #24]	; (8000550 <main+0x74>)
  8000538:	f000 fbaa 	bl	8000c90 <EEPROMRead>
   {
@@ -1382,25 +1382,25 @@ void Kp_Seperate(Kp)
  8000ab6:	b083      	sub	sp, #12
  8000ab8:	af00      	add	r7, sp, #0
  8000aba:	6078      	str	r0, [r7, #4]
-	Kp_sep[0] = (uint8_t)(Kp >> 24);
+	Kp_sep[0] = (uint8_t)(Kp >> 24) & 0xFF;
  8000abc:	687b      	ldr	r3, [r7, #4]
  8000abe:	161b      	asrs	r3, r3, #24
  8000ac0:	b2da      	uxtb	r2, r3
  8000ac2:	4b0b      	ldr	r3, [pc, #44]	; (8000af0 <Kp_Seperate+0x3c>)
  8000ac4:	701a      	strb	r2, [r3, #0]
-	Kp_sep[1] = (uint8_t)(Kp >> 16);
+	Kp_sep[1] = (uint8_t)(Kp >> 16) & 0xFF;
  8000ac6:	687b      	ldr	r3, [r7, #4]
  8000ac8:	141b      	asrs	r3, r3, #16
  8000aca:	b2da      	uxtb	r2, r3
  8000acc:	4b08      	ldr	r3, [pc, #32]	; (8000af0 <Kp_Seperate+0x3c>)
  8000ace:	705a      	strb	r2, [r3, #1]
-	Kp_sep[2] = (uint8_t)(Kp >> 8);
+	Kp_sep[2] = (uint8_t)(Kp >> 8) & 0xFF;
  8000ad0:	687b      	ldr	r3, [r7, #4]
  8000ad2:	121b      	asrs	r3, r3, #8
  8000ad4:	b2da      	uxtb	r2, r3
  8000ad6:	4b06      	ldr	r3, [pc, #24]	; (8000af0 <Kp_Seperate+0x3c>)
  8000ad8:	709a      	strb	r2, [r3, #2]
-	Kp_sep[3] = (uint8_t)(Kp);
+	Kp_sep[3] = (uint8_t)(Kp) & 0xFF;
  8000ada:	687b      	ldr	r3, [r7, #4]
  8000adc:	b2da      	uxtb	r2, r3
  8000ade:	4b04      	ldr	r3, [pc, #16]	; (8000af0 <Kp_Seperate+0x3c>)
@@ -1422,25 +1422,25 @@ void Ki_Seperate(Ki)
  8000af6:	b083      	sub	sp, #12
  8000af8:	af00      	add	r7, sp, #0
  8000afa:	6078      	str	r0, [r7, #4]
-	Ki_sep[0] = (uint8_t)(Ki >> 24);
+	Ki_sep[0] = (uint8_t)(Ki >> 24) & 0xFF;
  8000afc:	687b      	ldr	r3, [r7, #4]
  8000afe:	161b      	asrs	r3, r3, #24
  8000b00:	b2da      	uxtb	r2, r3
  8000b02:	4b0b      	ldr	r3, [pc, #44]	; (8000b30 <Ki_Seperate+0x3c>)
  8000b04:	701a      	strb	r2, [r3, #0]
-	Ki_sep[1] = (uint8_t)(Ki >> 16);
+	Ki_sep[1] = (uint8_t)(Ki >> 16) & 0xFF;
  8000b06:	687b      	ldr	r3, [r7, #4]
  8000b08:	141b      	asrs	r3, r3, #16
  8000b0a:	b2da      	uxtb	r2, r3
  8000b0c:	4b08      	ldr	r3, [pc, #32]	; (8000b30 <Ki_Seperate+0x3c>)
  8000b0e:	705a      	strb	r2, [r3, #1]
-	Ki_sep[2] = (uint8_t)(Ki >> 8);
+	Ki_sep[2] = (uint8_t)(Ki >> 8) & 0xFF;
  8000b10:	687b      	ldr	r3, [r7, #4]
  8000b12:	121b      	asrs	r3, r3, #8
  8000b14:	b2da      	uxtb	r2, r3
  8000b16:	4b06      	ldr	r3, [pc, #24]	; (8000b30 <Ki_Seperate+0x3c>)
  8000b18:	709a      	strb	r2, [r3, #2]
-	Ki_sep[3] = (uint8_t)(Ki);
+	Ki_sep[3] = (uint8_t)(Ki) & 0xFF;
  8000b1a:	687b      	ldr	r3, [r7, #4]
  8000b1c:	b2da      	uxtb	r2, r3
  8000b1e:	4b04      	ldr	r3, [pc, #16]	; (8000b30 <Ki_Seperate+0x3c>)
@@ -1462,25 +1462,25 @@ void Kd_Seperate(Kd)
  8000b36:	b083      	sub	sp, #12
  8000b38:	af00      	add	r7, sp, #0
  8000b3a:	6078      	str	r0, [r7, #4]
-	Kd_sep[0] = (uint8_t)(Kd >> 24);
+	Kd_sep[0] = (uint8_t)(Kd >> 24) & 0xFF;
  8000b3c:	687b      	ldr	r3, [r7, #4]
  8000b3e:	161b      	asrs	r3, r3, #24
  8000b40:	b2da      	uxtb	r2, r3
  8000b42:	4b0b      	ldr	r3, [pc, #44]	; (8000b70 <Kd_Seperate+0x3c>)
  8000b44:	701a      	strb	r2, [r3, #0]
-	Kd_sep[1] = (uint8_t)(Kd >> 16);
+	Kd_sep[1] = (uint8_t)(Kd >> 16) & 0xFF;
  8000b46:	687b      	ldr	r3, [r7, #4]
  8000b48:	141b      	asrs	r3, r3, #16
  8000b4a:	b2da      	uxtb	r2, r3
  8000b4c:	4b08      	ldr	r3, [pc, #32]	; (8000b70 <Kd_Seperate+0x3c>)
  8000b4e:	705a      	strb	r2, [r3, #1]
-	Kd_sep[2] = (uint8_t)(Kd >> 8);
+	Kd_sep[2] = (uint8_t)(Kd >> 8) & 0xFF;
  8000b50:	687b      	ldr	r3, [r7, #4]
  8000b52:	121b      	asrs	r3, r3, #8
  8000b54:	b2da      	uxtb	r2, r3
  8000b56:	4b06      	ldr	r3, [pc, #24]	; (8000b70 <Kd_Seperate+0x3c>)
  8000b58:	709a      	strb	r2, [r3, #2]
-	Kd_sep[3] = (uint8_t)(Kd);
+	Kd_sep[3] = (uint8_t)(Kd) & 0xFF;
  8000b5a:	687b      	ldr	r3, [r7, #4]
  8000b5c:	b2da      	uxtb	r2, r3
  8000b5e:	4b04      	ldr	r3, [pc, #16]	; (8000b70 <Kd_Seperate+0x3c>)
@@ -1502,25 +1502,25 @@ void Kff_Seperate(Kff)
  8000b76:	b083      	sub	sp, #12
  8000b78:	af00      	add	r7, sp, #0
  8000b7a:	6078      	str	r0, [r7, #4]
-	Kff_sep[0] = (uint8_t)(Kff >> 24);
+	Kff_sep[0] = (uint8_t)(Kff >> 24) & 0xFF;
  8000b7c:	687b      	ldr	r3, [r7, #4]
  8000b7e:	161b      	asrs	r3, r3, #24
  8000b80:	b2da      	uxtb	r2, r3
  8000b82:	4b0b      	ldr	r3, [pc, #44]	; (8000bb0 <Kff_Seperate+0x3c>)
  8000b84:	701a      	strb	r2, [r3, #0]
-	Kff_sep[1] = (uint8_t)(Kff >> 16);
+	Kff_sep[1] = (uint8_t)(Kff >> 16) & 0xFF;
  8000b86:	687b      	ldr	r3, [r7, #4]
  8000b88:	141b      	asrs	r3, r3, #16
  8000b8a:	b2da      	uxtb	r2, r3
  8000b8c:	4b08      	ldr	r3, [pc, #32]	; (8000bb0 <Kff_Seperate+0x3c>)
  8000b8e:	705a      	strb	r2, [r3, #1]
-	Kff_sep[2] = (uint8_t)(Kff >> 8);
+	Kff_sep[2] = (uint8_t)(Kff >> 8) & 0xFF;
  8000b90:	687b      	ldr	r3, [r7, #4]
  8000b92:	121b      	asrs	r3, r3, #8
  8000b94:	b2da      	uxtb	r2, r3
  8000b96:	4b06      	ldr	r3, [pc, #24]	; (8000bb0 <Kff_Seperate+0x3c>)
  8000b98:	709a      	strb	r2, [r3, #2]
-	Kff_sep[3] = (uint8_t)(Kff);
+	Kff_sep[3] = (uint8_t)(Kff) & 0xFF;
  8000b9a:	687b      	ldr	r3, [r7, #4]
  8000b9c:	b2da      	uxtb	r2, r3
  8000b9e:	4b04      	ldr	r3, [pc, #16]	; (8000bb0 <Kff_Seperate+0x3c>)
@@ -1636,13 +1636,13 @@ void EEPROMWrite()
  8000c4a:	4b0d      	ldr	r3, [pc, #52]	; (8000c80 <EEPROMWrite+0xcc>)
  8000c4c:	73da      	strb	r2, [r3, #15]
 
-        if (HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, PID_data, 16) == HAL_OK)
+        if (HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT, PID_data, 16) == HAL_OK)
  8000c4e:	2310      	movs	r3, #16
  8000c50:	9301      	str	r3, [sp, #4]
  8000c52:	4b0b      	ldr	r3, [pc, #44]	; (8000c80 <EEPROMWrite+0xcc>)
  8000c54:	9300      	str	r3, [sp, #0]
  8000c56:	2310      	movs	r3, #16
- 8000c58:	2235      	movs	r2, #53	; 0x35
+ 8000c58:	2230      	movs	r2, #48	; 0x30
  8000c5a:	21a0      	movs	r1, #160	; 0xa0
  8000c5c:	4806      	ldr	r0, [pc, #24]	; (8000c78 <EEPROMWrite+0xc4>)
  8000c5e:	f001 fe8b 	bl	8002978 <HAL_I2C_Mem_Write_IT>
@@ -1666,7 +1666,7 @@ void EEPROMWrite()
  8000c74:	2000040c 	.word	0x2000040c
  8000c78:	200000e0 	.word	0x200000e0
  8000c7c:	200003fc 	.word	0x200003fc
- 8000c80:	20000414 	.word	0x20000414
+ 8000c80:	20000420 	.word	0x20000420
  8000c84:	20000400 	.word	0x20000400
  8000c88:	20000404 	.word	0x20000404
  8000c8c:	20000408 	.word	0x20000408
@@ -1692,13 +1692,13 @@ void EEPROMRead(uint8_t *Rdata,uint16_t len)
  8000cac:	2b20      	cmp	r3, #32
  8000cae:	d10c      	bne.n	8000cca <EEPROMRead+0x3a>
 	{
-		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, Rdata, len);
+		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT, Rdata, len);
  8000cb0:	887b      	ldrh	r3, [r7, #2]
  8000cb2:	9301      	str	r3, [sp, #4]
  8000cb4:	687b      	ldr	r3, [r7, #4]
  8000cb6:	9300      	str	r3, [sp, #0]
  8000cb8:	2310      	movs	r3, #16
- 8000cba:	2235      	movs	r2, #53	; 0x35
+ 8000cba:	2230      	movs	r2, #48	; 0x30
  8000cbc:	21a0      	movs	r1, #160	; 0xa0
  8000cbe:	4806      	ldr	r0, [pc, #24]	; (8000cd8 <EEPROMRead+0x48>)
  8000cc0:	f001 ff0c 	bl	8002adc <HAL_I2C_Mem_Read_IT>
@@ -3232,7 +3232,7 @@ LoopFillZerobss:
   ldr r2, =_sbss
  80014a8:	2000001c 	.word	0x2000001c
   ldr r4, =_ebss
- 80014ac:	20000428 	.word	0x20000428
+ 80014ac:	20000434 	.word	0x20000434
 
 080014b0 <ADC_IRQHandler>:
  * @retval None       
@@ -3395,7 +3395,7 @@ __weak void HAL_IncTick(void)
  8001574:	4770      	bx	lr
  8001576:	bf00      	nop
  8001578:	20000018 	.word	0x20000018
- 800157c:	20000424 	.word	0x20000424
+ 800157c:	20000430 	.word	0x20000430
 
 08001580 <HAL_GetTick>:
   * @note This function is declared as __weak to be overwritten in case of other 
@@ -3415,7 +3415,7 @@ __weak uint32_t HAL_GetTick(void)
  800158c:	f85d 7b04 	ldr.w	r7, [sp], #4
  8001590:	4770      	bx	lr
  8001592:	bf00      	nop
- 8001594:	20000424 	.word	0x20000424
+ 8001594:	20000430 	.word	0x20000430
 
 08001598 <HAL_ADC_Init>:
   * @param  hadc pointer to a ADC_HandleTypeDef structure that contains

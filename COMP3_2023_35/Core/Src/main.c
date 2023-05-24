@@ -93,7 +93,7 @@ uint32_t Kff = 0x44;
 uint8_t Kff_sep[4];
 uint8_t eepromWriteF = 0;
 uint8_t eepromReadF = 0;
-uint8_t eepromReadBack[4];
+uint8_t eepromReadBack[16];
 uint8_t PID_data[16];
 
 
@@ -207,7 +207,7 @@ int main(void)
 	  Kd_Seperate(Kd);
 	  Kff_Seperate(Kff);
 	  EEPROMWrite();
-	  EEPROMRead(eepromReadBack,4);
+	  EEPROMRead(eepromReadBack,16);
 
 
 //	  Set_SPI_LED();
@@ -849,34 +849,34 @@ static void MX_GPIO_Init(void)
 
 void Kp_Seperate(Kp)
 {
-	Kp_sep[0] = (uint8_t)(Kp >> 24);
-	Kp_sep[1] = (uint8_t)(Kp >> 16);
-	Kp_sep[2] = (uint8_t)(Kp >> 8);
-	Kp_sep[3] = (uint8_t)(Kp);
+	Kp_sep[0] = (uint8_t)(Kp >> 24) & 0xFF;
+	Kp_sep[1] = (uint8_t)(Kp >> 16) & 0xFF;
+	Kp_sep[2] = (uint8_t)(Kp >> 8) & 0xFF;
+	Kp_sep[3] = (uint8_t)(Kp) & 0xFF;
 }
 
 void Ki_Seperate(Ki)
 {
-	Ki_sep[0] = (uint8_t)(Ki >> 24);
-	Ki_sep[1] = (uint8_t)(Ki >> 16);
-	Ki_sep[2] = (uint8_t)(Ki >> 8);
-	Ki_sep[3] = (uint8_t)(Ki);
+	Ki_sep[0] = (uint8_t)(Ki >> 24) & 0xFF;
+	Ki_sep[1] = (uint8_t)(Ki >> 16) & 0xFF;
+	Ki_sep[2] = (uint8_t)(Ki >> 8) & 0xFF;
+	Ki_sep[3] = (uint8_t)(Ki) & 0xFF;
 }
 
 void Kd_Seperate(Kd)
 {
-	Kd_sep[0] = (uint8_t)(Kd >> 24);
-	Kd_sep[1] = (uint8_t)(Kd >> 16);
-	Kd_sep[2] = (uint8_t)(Kd >> 8);
-	Kd_sep[3] = (uint8_t)(Kd);
+	Kd_sep[0] = (uint8_t)(Kd >> 24) & 0xFF;
+	Kd_sep[1] = (uint8_t)(Kd >> 16) & 0xFF;
+	Kd_sep[2] = (uint8_t)(Kd >> 8) & 0xFF;
+	Kd_sep[3] = (uint8_t)(Kd) & 0xFF;
 }
 
 void Kff_Seperate(Kff)
 {
-	Kff_sep[0] = (uint8_t)(Kff >> 24);
-	Kff_sep[1] = (uint8_t)(Kff >> 16);
-	Kff_sep[2] = (uint8_t)(Kff >> 8);
-	Kff_sep[3] = (uint8_t)(Kff);
+	Kff_sep[0] = (uint8_t)(Kff >> 24) & 0xFF;
+	Kff_sep[1] = (uint8_t)(Kff >> 16) & 0xFF;
+	Kff_sep[2] = (uint8_t)(Kff >> 8) & 0xFF;
+	Kff_sep[3] = (uint8_t)(Kff) & 0xFF;
 }
 
 
@@ -903,7 +903,7 @@ void EEPROMWrite()
         PID_data[14] = Kff_sep[2];
         PID_data[15] = Kff_sep[3];
 
-        if (HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, PID_data, 16) == HAL_OK)
+        if (HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT, PID_data, 16) == HAL_OK)
         {
             eepromWriteF = 0; // Clear the write flag after initiating the write operation
         }
@@ -918,7 +918,7 @@ void EEPROMRead(uint8_t *Rdata,uint16_t len)
 {
 	if (eepromReadF && hi2c1.State == HAL_I2C_STATE_READY)
 	{
-		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, Rdata, len);
+		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT, Rdata, len);
 
 		eepromReadF = 0;
 	}
