@@ -52,6 +52,8 @@ I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c3;
 DMA_HandleTypeDef hdma_i2c1_rx;
 DMA_HandleTypeDef hdma_i2c1_tx;
+DMA_HandleTypeDef hdma_i2c3_rx;
+DMA_HandleTypeDef hdma_i2c3_tx;
 
 SPI_HandleTypeDef hspi2;
 SPI_HandleTypeDef hspi3;
@@ -107,6 +109,11 @@ uint8_t LEDstate = 0;
 uint16_t VOLTRx[16];
 uint16_t VOLTTx[16];
 //uint8_t LEDstate = 0;
+uint16_t adcRawData[30];
+float Voltage = 0;
+float sum_Voltage = 0;
+float avg_Voltage = 0;
+
 
 
 
@@ -191,6 +198,10 @@ int main(void)
 // 	setOutputGPIOB();
 
 
+  // SPI_VOLT_6
+//  SPI_voltage_set();
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -202,16 +213,42 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  // I2C_PID 24LC64
-	  Kp_Seperate(Kp);
-	  Ki_Seperate(Ki);
-	  Kd_Seperate(Kd);
-	  Kff_Seperate(Kff);
-	  EEPROMWrite();
-	  EEPROMRead(eepromReadBack,16);
+//	  Kp_Seperate(Kp);
+//	  Ki_Seperate(Ki);
+//	  Kd_Seperate(Kd);
+//	  Kff_Seperate(Kff);
+//	  EEPROMWrite();
+//	  EEPROMRead(eepromReadBack,16);
 
-
+	  // SPI_LED_5
 //	  Set_SPI_LED();
-  }
+
+
+
+	  // SPI_VOLT_6
+//	  write_spi();
+//
+//	  static uint32_t timestamp = 0;
+//	  if(HAL_GetTick() > timestamp)
+//	  {
+//		timestamp = HAL_GetTick() + 10;
+//		LEDstate++;
+//		LEDstate = LEDstate % 2;
+//		switch (LEDstate)
+//			{
+//			case 0:
+//				SPI_voltage_set();
+//				break;
+//			case 1:
+	  MCP4922_SetVoltage(3300);
+	  voltage();
+//				write_voltage();
+//				voltage();
+//				break;
+//		}
+//	  }
+//	  SPITxRx_readIO();
+	}
   /* USER CODE END 3 */
 }
 
@@ -285,13 +322,13 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ENABLE;
-  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 2;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -372,7 +409,7 @@ static void MX_I2C3_Init(void)
 
   /* USER CODE END I2C3_Init 1 */
   hi2c3.Instance = I2C3;
-  hi2c3.Init.ClockSpeed = 100000;
+  hi2c3.Init.ClockSpeed = 400000;
   hi2c3.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c3.Init.OwnAddress1 = 0;
   hi2c3.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -516,6 +553,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+  /* DMA1_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
@@ -545,7 +588,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
@@ -559,8 +602,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PC0 PC1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -926,6 +969,23 @@ void EEPROMRead(uint8_t *Rdata,uint16_t len)
 
 
 
+// I2C_LED_4
+
+//void SPITxRx_readIO()
+//{
+//	SPITx[0] = 0b01000001;
+//	SPITx[1] = 0x12;
+//	SPITx[2] = 0;
+//	SPITx[3] = 0;
+//	HAL_I2C_Mem_Read_IT(hi2c, 0x20, 0x12, I2C_MEMADD_SIZE_16BIT, SwitchData, 8);
+//	HAL_I2C_Master_Transmit_IT(&hi2c3, DevAddress, pData, Size)
+//}
+
+//void HAL_I2C_TxRxCpltCallback(I2C_HandleTypeDef *hspi)
+//{
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 1); //CS dnSelect
+//}
+
 
 // SPI_LED_5
 //void SPITxRx_Setup()
@@ -1052,70 +1112,111 @@ void EEPROMRead(uint8_t *Rdata,uint16_t len)
 
 
 
-// SPI_VOLT_ADC_6
-//void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-//{
-//	if(GPIO_Pin == GPIO_PIN_13)
-//	{
-//		HAL_ADC_Start_DMA(&hadc1, &adcRawData, 30);
-//	}
-//}
-//
-//void avg_number()
-//{
-//	sum_Voltage = 0;
-//	sum_Temp = 0;
-//	for(int i=0;i<30;i++)
-//	{
-//		if(i%3 == 0)
-//		{
-//			Voltage = ((adcRawData[i]*3300)/4096)*2;
-//			sum_Voltage = sum_Voltage + Voltage;
-//		}
-//		else if (i%3 == 2)
-//		{
-//			Temp_V = ((adcRawData[i]*3300)/4096);
-//			Temp_C = (((Temp_V-760)/(2.5))/1000)+25;
-//			Temp_K = (Temp_C + 273.15);
-//			sum_Temp = (sum_Temp + Temp_K);
-//		}
-//	}
-//	avg_Voltage = sum_Voltage/10;
-//	avg_Temp = sum_Temp/10;
-//}
 
 
-//void SPITxRx()
-//{
-//	//CS pulse
-//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0); // CS Select
-//	HAL_Delay(1);
-//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 1); // CS deSelect
-//	HAL_Delay(1);
-//}
-//
-//void write_spi()
-//{
-//	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
-//		VOLTTx[16] = {1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1} ;
-//		HAL_SPI_TransmitReceive_IT(&hspi2, VOLTTx, VOLTRx, 16);
-//	}
-//}
-//
-//
-//void setOutput()
-//{
-//	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
-//	{
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
-//		SPITx[0] = 0b01000000;
-//		SPITx[1] = 0x01;
-//		SPITx[2] = 0b00000000;
-//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-//	}
-//}
+
+	//SPI_VOLT_ADC_6
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if(GPIO_Pin == GPIO_PIN_13)
+	{
+		HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&adcRawData, 30);
+	}
+}
+
+void voltage()
+{
+	sum_Voltage = 0;
+	for(int i=0;i<30;i++)
+	{
+		if(i%2 == 1)
+		{
+			Voltage = ((adcRawData[i]*3300)/4096);
+			sum_Voltage = sum_Voltage + Voltage;
+		}
+		else if (i%2 == 0)
+		{
+			Voltage = ((adcRawData[i]*3300)/4096);
+			sum_Voltage = sum_Voltage + Voltage;
+		}
+	}
+	avg_Voltage = sum_Voltage/10;
+}
+
+
+void SPI_voltage_set()
+{
+    // CS pulse
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);  // CS Select
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);    // CS deSelect
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+    HAL_Delay(1);
+}
+
+void write_voltage()
+{
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
+    {
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
+
+        //uint16_t VOLTTx[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1};
+        uint16_t VOLTTx[16] = {1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+
+        HAL_SPI_Transmit_IT(&hspi2, (uint8_t*)VOLTTx, 16);
+    }
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);  // CS deSelect
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_SET);
+}
+
+void MCP4922_Select(void)
+{
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);  // Pull CS pin low
+}
+
+// Function to deselect the MCP4922 DAC
+void MCP4922_Deselect(void)
+{
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_SET);    // Pull CS pin high
+}
+
+uint16_t MCP4922_ConvertVoltage(float voltage)
+{
+
+  uint16_t digitalValue = (uint16_t)((voltage / 3300) * 4095);
+
+  uint16_t dataWord = 0;
+  dataWord |= (0 << 15);        // Leftmost bit is always 0
+  dataWord |= (0 << 14);        // Buffered output
+  dataWord |= (1 << 13);        // 1x gain
+  dataWord |= (1 << 12);        // Power on DAC output
+  dataWord |= (digitalValue & 0xFFF);  // 12-bit digital value
+
+  return dataWord;
+}
+
+void MCP4922_SetVoltage(float voltage)
+{
+  uint16_t dataWord = MCP4922_ConvertVoltage(voltage);
+
+  // Select MCP4922 DAC
+  MCP4922_Select();
+
+  // Transmit data word via SPI
+  HAL_SPI_Transmit(&hspi2, (uint8_t*)&dataWord, sizeof(dataWord), HAL_MAX_DELAY);
+
+  // Deselect MCP4922 DAC
+  MCP4922_Deselect();
+}
+
+
 
 
 
