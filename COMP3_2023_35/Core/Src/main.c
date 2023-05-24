@@ -22,6 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "stdio.h"
+#include "string.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,6 +47,17 @@ DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
+
+// Ceaser_Cipher
+uint8_t RxBuffer[2];
+uint8_t TxBuffer[100];
+int button;
+char character;
+int condition = 0;
+char state;
+
+uint32_t timestamp = 0;
+
 
 /* USER CODE END PV */
 
@@ -92,6 +106,12 @@ int main(void)
   MX_DMA_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  // Ceaser_Cipher
+  uint8_t text[] = "1: Encrypt \r\n2 : Encode\r\n";
+  HAL_UART_Transmit(&huart2, text, 25, 10);
+
+  UARTCeaserCipherConfig();
 
   /* USER CODE END 2 */
 
@@ -238,6 +258,164 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+//ceaser_cipher
+
+	// confic
+void UARTCeaserCipherConfig()
+{
+	//start UART in DMA Mode
+	HAL_UART_Receive_DMA(&huart2, RxBuffer, 1);
+}
+
+	// check
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart == &huart2)
+	{
+		RxBuffer[1] = '\0';
+
+		if(RxBuffer[0]=='1')
+		{
+			button = '1';
+		}
+		else if(RxBuffer[0]=='2')
+		{
+			button = '2';
+		}
+		else if(RxBuffer[0]=='3')
+		{
+			button = '3';
+		}
+		else if((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122))
+		{
+			button = 'z';
+		}
+		else if((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90))
+		{
+			button = 'z';
+		}
+		else
+		{
+			button = '4';
+		}
+
+		ceaser_cipher(button);
+
+	}
+}
+
+void ceaser_cipher(state)
+{
+	switch(state)
+		{
+			case '1':
+			{
+				if (condition == 0)
+				{
+				sprintf((char*)TxBuffer, "----ENCRYPT----\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 2;
+				}
+
+			}
+			break;
+
+			case '2':
+			{
+				if (condition == 0)
+				{
+				character = RxBuffer[0]-3;
+				sprintf((char*)TxBuffer, "----ENCODE----\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 3;
+				}
+			}
+			break;
+
+			case '3':
+			{
+				if ((condition == 0) || (condition == 1) || (condition == 2) || (condition == 3))
+				{
+				character = RxBuffer[0]+3;
+				sprintf((char*)TxBuffer, "1: Encrypt \r\n2: Encode\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 0;
+				}
+			}
+			break;
+
+			case '4':
+			{
+				if (condition == 0)
+				{
+				character = RxBuffer[0]+3;
+				sprintf((char*)TxBuffer, "again\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 0;
+				}
+				else if (condition == 1)
+				{
+				character = RxBuffer[0]+3;
+				sprintf((char*)TxBuffer, "again\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 1;
+				}
+				else if (condition == 2)
+				{
+				character = RxBuffer[0]+3;
+				sprintf((char*)TxBuffer, "again\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 2;
+				}
+				else if (condition == 3)
+				{
+				character = RxBuffer[0]+3;
+				sprintf((char*)TxBuffer, "again\r\n");
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 3;
+				}
+			}
+			break;
+
+			case 'z':
+			{
+				if ((condition == 2) || (condition == 1))
+				{
+				character = RxBuffer[0]+3;
+					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character > 122))
+					{
+						character = (character%122) + 96;
+					}
+					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character > 90))
+					{
+						character = (character%122) + 64;
+					}
+				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 2;
+				}
+				else if ((condition == 3) || (condition == 1))
+				{
+				character = RxBuffer[0]-3;
+					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character < 97))
+					{
+						character = character + 26;
+					}
+					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character < 65))
+					{
+						character = character + 26;
+					}
+				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
+				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+				condition = 3;
+				}
+			}
+			break;
+		}
+
+}
 
 /* USER CODE END 4 */
 
