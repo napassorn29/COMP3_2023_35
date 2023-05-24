@@ -56,6 +56,21 @@ char character;
 int condition = 0;
 char state;
 
+
+// calculator
+uint8_t receive[2];
+char sign;
+char first_number;
+char second_number;
+char equal;
+int state_cal = 0;
+int condition_cal = 0;
+uint16_t Answer = 0;
+
+
+//
+
+
 uint32_t timestamp = 0;
 
 
@@ -108,10 +123,14 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Ceaser_Cipher
-  uint8_t text[] = "1: Encrypt \r\n2 : Encode\r\n";
-  HAL_UART_Transmit(&huart2, text, 25, 10);
+//  uint8_t text[] = "1: Encrypt \r\n2 : Decode\r\n";
+//  HAL_UART_Transmit(&huart2, text, 25, 10);
+//  UARTCeaserCipherConfig();
 
-  UARTCeaserCipherConfig();
+  // Calculator
+  	UARTCalculatorConfig();
+	uint8_t text[] = "\r\n-------Calculator : press number please------\r\n";
+	HAL_UART_Transmit(&huart2, text, 50, 10);
 
   /* USER CODE END 2 */
 
@@ -263,159 +282,261 @@ static void MX_GPIO_Init(void)
 //ceaser_cipher
 
 	// confic
-void UARTCeaserCipherConfig()
-{
-	//start UART in DMA Mode
-	HAL_UART_Receive_DMA(&huart2, RxBuffer, 1);
-}
+//void UARTCeaserCipherConfig()
+//{
+//	//start UART in DMA Mode
+//	HAL_UART_Receive_DMA(&huart2, RxBuffer, 1);
+//}
 
 	// check
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//	if(huart == &huart2)
+//	{
+//		RxBuffer[1] = '\0';
+//
+//		if(RxBuffer[0]=='1')button = '1';
+//		else if(RxBuffer[0]=='2')button = '2';
+//		else if(RxBuffer[0]=='3')button = '3';
+//		else if((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122))button = 'z';
+//		else if((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90))button = 'z';
+//		else button = '4';
+//
+//		ceaser_cipher(button);
+//
+//	}
+//}
+
+	// switch case
+//void ceaser_cipher(state)
+//{
+//	switch(state)
+//		{
+//			case '1':
+//			{
+//				if (condition == 0)
+//				{
+//				sprintf((char*)TxBuffer, "----ENCRYPT----\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 2;
+//				}
+//
+//			}
+//			break;
+//
+//			case '2':
+//			{
+//				if (condition == 0)
+//				{
+//				character = RxBuffer[0]-3;
+//				sprintf((char*)TxBuffer, "----DECODE----\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 3;
+//				}
+//			}
+//			break;
+//
+//			case '3':
+//			{
+//				if ((condition == 0) || (condition == 1) || (condition == 2) || (condition == 3))
+//				{
+//				character = RxBuffer[0]+3;
+//				sprintf((char*)TxBuffer, "1: Encrypt \r\n2: Decode\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 0;
+//				}
+//			}
+//			break;
+//
+//			case '4':
+//			{
+//				if (condition == 0)
+//				{
+//				character = RxBuffer[0]+3;
+//				sprintf((char*)TxBuffer, "again\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 0;
+//				}
+//				else if (condition == 1)
+//				{
+//				character = RxBuffer[0]+3;
+//				sprintf((char*)TxBuffer, "again\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 1;
+//				}
+//				else if (condition == 2)
+//				{
+//				character = RxBuffer[0]+3;
+//				sprintf((char*)TxBuffer, "again\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 2;
+//				}
+//				else if (condition == 3)
+//				{
+//				character = RxBuffer[0]+3;
+//				sprintf((char*)TxBuffer, "again\r\n");
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 3;
+//				}
+//			}
+//			break;
+//
+//			case 'z':
+//			{
+//				if ((condition == 2) || (condition == 1))
+//				{
+//				character = RxBuffer[0]+3;
+//					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character > 122))
+//					{
+//						character = (character%122) + 96;
+//					}
+//					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character > 90))
+//					{
+//						character = (character%122) + 64;
+//					}
+//				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 2;
+//				}
+//				else if ((condition == 3) || (condition == 1))
+//				{
+//				character = RxBuffer[0]-3;
+//					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character < 97))
+//					{
+//						character = character + 26;
+//					}
+//					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character < 65))
+//					{
+//						character = character + 26;
+//					}
+//				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
+//				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+//				condition = 3;
+//				}
+//			}
+//			break;
+//		}
+//
+//}
+
+
+
+// Calculator
+
+	// config
+void UARTCalculatorConfig()
+{
+	//start UART in DMA Mode
+	HAL_UART_Receive_DMA(&huart2, receive, 1);
+}
+
+	//
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	if(huart == &huart2)
 	{
-		RxBuffer[1] = '\0';
+		receive[1] = '\0';
 
-		if(RxBuffer[0]=='1')
+		if((48 <= receive[0]) && (receive[0]<= 59) && (condition_cal == 0))
 		{
-			button = '1';
+			first_number = receive[0]% 48;
+			state_cal = 0;
+			condition_cal = 0;
 		}
-		else if(RxBuffer[0]=='2')
+		else if((48 <= receive[0]) && (receive[0]<= 59))
 		{
-			button = '2';
+			second_number = receive[0]% 48;
+			state_cal = 2;
+			if(condition_cal == 1)condition_cal = 1;
+			else if (condition_cal == 3)condition_cal = 3;
 		}
-		else if(RxBuffer[0]=='3')
+		else if((receive[0]=='+') || (receive[0]=='-') || (receive[0]=='*') || (receive[0]=='/'))
 		{
-			button = '3';
+			sign = receive[0];
+			state_cal = 1;
+			if((condition_cal == 0) || (condition_cal == 1))condition_cal = 1;
+			else if (condition_cal == 3)condition_cal = 3;
 		}
-		else if((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122))
+		else if (((receive[0] == 13) && (condition_cal == 1)) && ((state_cal == 2)||(state_cal == 5)))
 		{
-			button = 'z';
+			equal = receive[0];
+			state_cal = 3;
+			condition_cal = 3;
 		}
-		else if((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90))
+		else if((receive[0] == 13) && (condition_cal == 3))
 		{
-			button = 'z';
+			equal = receive[0];
+			state_cal = 4;
+			condition_cal = 3;
 		}
 		else
 		{
-			button = '4';
+			state_cal = 5;
 		}
 
-		ceaser_cipher(button);
-
+		Calculator(state_cal);
 	}
 }
 
-void ceaser_cipher(state)
+void Calculator(state)
 {
 	switch(state)
+	{
+		case 0:
 		{
-			case '1':
-			{
-				if (condition == 0)
-				{
-				sprintf((char*)TxBuffer, "----ENCRYPT----\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 2;
-				}
-
-			}
-			break;
-
-			case '2':
-			{
-				if (condition == 0)
-				{
-				character = RxBuffer[0]-3;
-				sprintf((char*)TxBuffer, "----ENCODE----\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 3;
-				}
-			}
-			break;
-
-			case '3':
-			{
-				if ((condition == 0) || (condition == 1) || (condition == 2) || (condition == 3))
-				{
-				character = RxBuffer[0]+3;
-				sprintf((char*)TxBuffer, "1: Encrypt \r\n2: Encode\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 0;
-				}
-			}
-			break;
-
-			case '4':
-			{
-				if (condition == 0)
-				{
-				character = RxBuffer[0]+3;
-				sprintf((char*)TxBuffer, "again\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 0;
-				}
-				else if (condition == 1)
-				{
-				character = RxBuffer[0]+3;
-				sprintf((char*)TxBuffer, "again\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 1;
-				}
-				else if (condition == 2)
-				{
-				character = RxBuffer[0]+3;
-				sprintf((char*)TxBuffer, "again\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 2;
-				}
-				else if (condition == 3)
-				{
-				character = RxBuffer[0]+3;
-				sprintf((char*)TxBuffer, "again\r\n");
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 3;
-				}
-			}
-			break;
-
-			case 'z':
-			{
-				if ((condition == 2) || (condition == 1))
-				{
-				character = RxBuffer[0]+3;
-					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character > 122))
-					{
-						character = (character%122) + 96;
-					}
-					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character > 90))
-					{
-						character = (character%122) + 64;
-					}
-				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 2;
-				}
-				else if ((condition == 3) || (condition == 1))
-				{
-				character = RxBuffer[0]-3;
-					if ((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122) && (character < 97))
-					{
-						character = character + 26;
-					}
-					else if ((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90) && (character < 65))
-					{
-						character = character + 26;
-					}
-				sprintf((char*)TxBuffer, "Received : %c\r\n3 : back\r\n",character);
-				HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
-				condition = 3;
-				}
-			}
-			break;
+			sprintf((char*)TxBuffer, "%d", first_number);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
 		}
+		break;
+
+		case 1:
+		{
+			sprintf((char*)TxBuffer, "%c", sign);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+		}
+		break;
+
+		case 2:
+		{
+			sprintf((char*)TxBuffer, "%d", second_number);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+		}
+		break;
+
+		case 3:
+		{
+			if(sign=='+')Answer = first_number + second_number;
+			else if(sign=='-')Answer = first_number - second_number;
+			else if(sign=='*')Answer = first_number * second_number;
+			else if((sign=='/') && (second_number==0))Answer = 0;
+			else if((sign=='/') && (second_number!=0))Answer = first_number / second_number;
+			sprintf((char*)TxBuffer, "=%d", Answer);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+		}
+		break;
+
+		case 4:
+		{
+			if(sign=='+')Answer += second_number;
+			else if(sign=='-')Answer = Answer - second_number;
+			else if((sign=='/') && (second_number==0))Answer = 0;
+			else if((sign=='/') && (second_number!=0))Answer = Answer / second_number;
+			sprintf((char*)TxBuffer, "=%d", Answer);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+		}
+		break;
+
+		case 5:
+		{
+			sprintf((char*)TxBuffer, "\r\nplease press number again\r\n%d", Answer);
+			HAL_UART_Transmit_DMA(&huart2, TxBuffer, strlen((char*)TxBuffer));
+		}
+		break;
+	}
 
 }
+
+
 
 /* USER CODE END 4 */
 
