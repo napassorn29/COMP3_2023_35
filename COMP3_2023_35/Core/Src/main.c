@@ -266,7 +266,6 @@ int main(void)
 //				break;
 //			case 1:
 //	  			MCP4922_SetVoltage(3300);
-//	  			voltage();
 //				write_voltage();
 //				voltage();
 //				break;
