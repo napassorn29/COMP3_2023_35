@@ -84,12 +84,17 @@ uint16_t Answer = 0;
 
 // PID 24LC64
 uint32_t Kp = 0x12;
+uint8_t Kp_sep[4];
 uint32_t Ki = 0x22;
+uint8_t Ki_sep[4];
 uint32_t Kd = 0x13;
+uint8_t Kd_sep[4];
 uint32_t Kff = 0x44;
-uint32_t eepromWriteF = 0;
-uint32_t eepromReadF = 0;
-uint32_t eepromReadBack[4];
+uint8_t Kff_sep[4];
+uint8_t eepromWriteF = 0;
+uint8_t eepromReadF = 0;
+uint8_t eepromReadBack[4];
+uint8_t PID_data[16];
 
 
 // SPI_LED_5
@@ -182,8 +187,8 @@ int main(void)
 
 
   // SPI_LED_5
- 	SPITxRx_Setup();
- 	setOutputGPIOB();
+// 	SPITxRx_Setup();
+// 	setOutputGPIOB();
 
 
   /* USER CODE END 2 */
@@ -195,11 +200,16 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  // I2C_
-//	  EEPROMWrite();
-//	  EEPROMRead(eepromReadBack,4);
 
-	  // PID 24LC64
+	  // I2C_PID 24LC64
+	  Kp_Seperate(Kp);
+	  Ki_Seperate(Ki);
+	  Kd_Seperate(Kd);
+	  Kff_Seperate(Kff);
+	  EEPROMWrite();
+	  EEPROMRead(eepromReadBack,4);
+
+
 //	  Set_SPI_LED();
   }
   /* USER CODE END 3 */
@@ -578,30 +588,30 @@ static void MX_GPIO_Init(void)
 //ceaser_cipher
 
 	// confic
-void UARTCeaserCipherConfig()
-{
-	//start UART in DMA Mode
-	HAL_UART_Receive_DMA(&huart2, RxBuffer, 1);
-}
-
-	 //check
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart == &huart2)
-	{
-		RxBuffer[1] = '\0';
-
-		if(RxBuffer[0]=='1')button = '1';
-		else if(RxBuffer[0]=='2')button = '2';
-		else if(RxBuffer[0]=='3')button = '3';
-		else if((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122))button = 'z';
-		else if((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90))button = 'z';
-		else button = '4';
-
-		ceaser_cipher(button);
-
-	}
-}
+//void UARTCeaserCipherConfig()
+//{
+//	//start UART in DMA Mode
+//	HAL_UART_Receive_DMA(&huart2, RxBuffer, 1);
+//}
+//
+//	 //check
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//	if(huart == &huart2)
+//	{
+//		RxBuffer[1] = '\0';
+//
+//		if(RxBuffer[0]=='1')button = '1';
+//		else if(RxBuffer[0]=='2')button = '2';
+//		else if(RxBuffer[0]=='3')button = '3';
+//		else if((97 <= RxBuffer[0]) && (RxBuffer[0]<= 122))button = 'z';
+//		else if((65 <= RxBuffer[0]) && (RxBuffer[0]<= 90))button = 'z';
+//		else button = '4';
+//
+//		ceaser_cipher(button);
+//
+//	}
+//}
 
 	 //switch case
 //void ceaser_cipher(state)
@@ -720,11 +730,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 // Calculator
 
 	// config
-void UARTCalculatorConfig()
-{
-	//start UART in DMA Mode
-	HAL_UART_Receive_DMA(&huart2, receive, 1);
-}
+//void UARTCalculatorConfig()
+//{
+//	//start UART in DMA Mode
+//	HAL_UART_Receive_DMA(&huart2, receive, 1);
+//}
 
 	//
 //void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
@@ -836,174 +846,209 @@ void UARTCalculatorConfig()
 
 
 // PID 24LC64
-//void I2C_Write32(uint32_t data)
-//{
-//  uint8_t KpData[4];
-//
-//  KpData[0] = (uint8_t)(data >> 24);  // MSB of data
-//  KpData[1] = (uint8_t)(data >> 16);
-//  KPData[2] = (uint8_t)(data >> 8);
-//  KpData[3] = (uint8_t)(data);
-//}
-//
-//union myUnion {
-//    uint32_t  myint;
-//    struct {
-//        uint8_t b1;
-//        uint8_t b2;
-//        uint8_t b3;
-//        uint8_t b4; // or number them in reverse order
-//    } myBytes;
-//};
-//
-//
-//void EEPROMWrite()
-//{
-//	if (eepromWriteF && hi2c1.State == HAL_I2C_STATE_READY)
-//	{
-//		uint32_t PID_data[4] = {KpData[4], (uint32_t)Ki, (uint32_t)Kd, (uint32_t)Kff};
-//		HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT,PID_data, 4);
-//		HAL_I2C_Mem_Write_IT(hi2c, DevAddress, MemAddress, MemAddSize, pData, Size)
-//
-//		eepromWriteF = 0;
-//	}
-//}
 
-//void EEPROMRead(uint8_t *Rdata,uint16_t len)
-//{
-//	if (eepromReadF && hi2c1.State == HAL_I2C_STATE_READY)
-//	{
-//		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x30, I2C_MEMADD_SIZE_16BIT, Rdata, len);
-//
-//		eepromReadF = 0;
-//	}
-//}
+void Kp_Seperate(Kp)
+{
+	Kp_sep[0] = (uint8_t)(Kp >> 24);
+	Kp_sep[1] = (uint8_t)(Kp >> 16);
+	Kp_sep[2] = (uint8_t)(Kp >> 8);
+	Kp_sep[3] = (uint8_t)(Kp);
+}
+
+void Ki_Seperate(Ki)
+{
+	Ki_sep[0] = (uint8_t)(Ki >> 24);
+	Ki_sep[1] = (uint8_t)(Ki >> 16);
+	Ki_sep[2] = (uint8_t)(Ki >> 8);
+	Ki_sep[3] = (uint8_t)(Ki);
+}
+
+void Kd_Seperate(Kd)
+{
+	Kd_sep[0] = (uint8_t)(Kd >> 24);
+	Kd_sep[1] = (uint8_t)(Kd >> 16);
+	Kd_sep[2] = (uint8_t)(Kd >> 8);
+	Kd_sep[3] = (uint8_t)(Kd);
+}
+
+void Kff_Seperate(Kff)
+{
+	Kff_sep[0] = (uint8_t)(Kff >> 24);
+	Kff_sep[1] = (uint8_t)(Kff >> 16);
+	Kff_sep[2] = (uint8_t)(Kff >> 8);
+	Kff_sep[3] = (uint8_t)(Kff);
+}
+
+
+void EEPROMWrite()
+{
+    if (eepromWriteF && hi2c1.State == HAL_I2C_STATE_READY)
+    {
+        static uint8_t PID_data[16];
+
+        PID_data[0] = Kp_sep[0];
+        PID_data[1] = Kp_sep[1];
+        PID_data[2] = Kp_sep[2];
+        PID_data[3] = Kp_sep[3];
+        PID_data[4] = Ki_sep[0];
+        PID_data[5] = Ki_sep[1];
+        PID_data[6] = Ki_sep[2];
+        PID_data[7] = Ki_sep[3];
+        PID_data[8] = Kd_sep[0];
+        PID_data[9] = Kd_sep[1];
+        PID_data[10] = Kd_sep[2];
+        PID_data[11] = Kd_sep[3];
+        PID_data[12] = Kff_sep[0];
+        PID_data[13] = Kff_sep[1];
+        PID_data[14] = Kff_sep[2];
+        PID_data[15] = Kff_sep[3];
+
+        if (HAL_I2C_Mem_Write_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, PID_data, 16) == HAL_OK)
+        {
+            eepromWriteF = 0; // Clear the write flag after initiating the write operation
+        }
+        else
+        {
+            // Error handling if write operation fails
+        }
+    }
+}
+
+void EEPROMRead(uint8_t *Rdata,uint16_t len)
+{
+	if (eepromReadF && hi2c1.State == HAL_I2C_STATE_READY)
+	{
+		HAL_I2C_Mem_Read_IT(&hi2c1, EEPROM_ADDR, 0x35, I2C_MEMADD_SIZE_16BIT, Rdata, len);
+
+		eepromReadF = 0;
+	}
+}
 
 
 
 
 // SPI_LED_5
-void SPITxRx_Setup()
-{
-	//CS pulse
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0); // CS Select
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 1); // CS deSelect
-	HAL_Delay(1);
-}
-
-void SPITxRx_readIO()
-{
-	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
-	{
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000001;
-		SPITx[1] = 0x12;
-		SPITx[2] = 0;
-		SPITx[3] = 0;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 4);
-	}
-}
-
-
-void setOutputGPIOB()
-{
-	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
-	{
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x01;
-		SPITx[2] = 0b00000000;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-	}
-}
-
-void SPITxRx_writeIO()
-{
-	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
-	{
-		if(SPIRx[2] == 0b00000010)
-		{
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b10101010;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(500);
-
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b01010101;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(500);
-		}
-		else if(SPIRx[2] == 0b00000011)
-		{
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b11111111;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		}
-		else if(SPIRx[2] == 0b00000001)
-		{
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b00111111;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(100);
-
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b11001111;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(100);
-
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b11110011;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(100);
-
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x13;
-		SPITx[2] = 0b11111100;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-		HAL_Delay(100);
-		}
-	}
-}
-
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
-{
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 1); //CS dnSelect
-}
-
-
-void Set_SPI_LED()
-{
-	static uint32_t timestamp = 0;
-	if(HAL_GetTick() > timestamp)
-	{
-		timestamp = HAL_GetTick() + 10;
-		LEDstate++;
-		LEDstate = LEDstate % 2;
-		switch (LEDstate)
-		{
-		case 0:
-		  SPITxRx_readIO();
-		  break;
-		case 1:
-		  SPITxRx_writeIO();
-		  break;
-		}
-	}
-}
+//void SPITxRx_Setup()
+//{
+//	//CS pulse
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0); // CS Select
+//	HAL_Delay(1);
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 1); // CS deSelect
+//	HAL_Delay(1);
+//}
+//
+//void SPITxRx_readIO()
+//{
+//	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
+//	{
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000001;
+//		SPITx[1] = 0x12;
+//		SPITx[2] = 0;
+//		SPITx[3] = 0;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 4);
+//	}
+//}
+//
+//
+//void setOutputGPIOB()
+//{
+//	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
+//	{
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x01;
+//		SPITx[2] = 0b00000000;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//	}
+//}
+//
+//void SPITxRx_writeIO()
+//{
+//	if (HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_2))
+//	{
+//		if(SPIRx[2] == 0b00000010)
+//		{
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b10101010;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(500);
+//
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b01010101;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(500);
+//		}
+//		else if(SPIRx[2] == 0b00000011)
+//		{
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b11111111;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		}
+//		else if(SPIRx[2] == 0b00000001)
+//		{
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b00111111;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(100);
+//
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b11001111;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(100);
+//
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b11110011;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(100);
+//
+//		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x13;
+//		SPITx[2] = 0b11111100;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//		HAL_Delay(100);
+//		}
+//	}
+//}
+//
+//void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+//{
+//	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, 1); //CS dnSelect
+//}
+//
+//
+//void Set_SPI_LED()
+//{
+//	static uint32_t timestamp = 0;
+//	if(HAL_GetTick() > timestamp)
+//	{
+//		timestamp = HAL_GetTick() + 10;
+//		LEDstate++;
+//		LEDstate = LEDstate % 2;
+//		switch (LEDstate)
+//		{
+//		case 0:
+//		  SPITxRx_readIO();
+//		  break;
+//		case 1:
+//		  SPITxRx_writeIO();
+//		  break;
+//		}
+//	}
+//}
 
 
 
@@ -1040,37 +1085,37 @@ void Set_SPI_LED()
 //}
 
 
-void SPITxRx()
-{
-	//CS pulse
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0); // CS Select
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 1); // CS deSelect
-	HAL_Delay(1);
-}
-
-void write_spi()
-{
-	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
-	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
-		VOLTTx[16] = {1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1} ;
-		HAL_SPI_TransmitReceive_IT(&hspi2, VOLTTx, VOLTRx, 16);
-	}
-}
-
-
-void setOutput()
-{
-	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
-	{
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
-		SPITx[0] = 0b01000000;
-		SPITx[1] = 0x01;
-		SPITx[2] = 0b00000000;
-		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
-	}
-}
+//void SPITxRx()
+//{
+//	//CS pulse
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0); // CS Select
+//	HAL_Delay(1);
+//	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 1); // CS deSelect
+//	HAL_Delay(1);
+//}
+//
+//void write_spi()
+//{
+//	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
+//	{
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
+//		VOLTTx[16] = {1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1} ;
+//		HAL_SPI_TransmitReceive_IT(&hspi2, VOLTTx, VOLTRx, 16);
+//	}
+//}
+//
+//
+//void setOutput()
+//{
+//	if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0))
+//	{
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, 0);
+//		SPITx[0] = 0b01000000;
+//		SPITx[1] = 0x01;
+//		SPITx[2] = 0b00000000;
+//		HAL_SPI_TransmitReceive_IT(&hspi3, SPITx, SPIRx, 3);
+//	}
+//}
 
 
 
